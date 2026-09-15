@@ -1,0 +1,564 @@
+<!DOCTYPE html><html class="dark scroll-smooth" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>sean.scott // portfolio</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Space Mono, IBM Plex Mono & Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&amp;family=Inter:wght@300;400;500;600;700&amp;family=Space+Mono:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            app: {
+              bg: '#07080a',
+              panel: 'rgba(12, 15, 20, 0.72)',
+              surface: 'rgba(16, 21, 29, 0.55)',
+              border: 'rgba(255, 255, 255, 0.08)',
+              borderHover: 'rgba(255, 255, 255, 0.18)',
+            },
+            accent: {
+              emerald: '#34d399',
+              dim: '#10b981',
+              glow: 'rgba(52, 211, 153, 0.12)',
+            },
+            content: {
+              primary: '#f1f5f9',
+              secondary: '#94a3b8',
+              tertiary: '#64748b',
+              muted: '#475569',
+            }
+          },
+          fontFamily: {
+            mono: ['"Space Mono"', '"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+            sans: ['"Inter"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          }
+        }
+      }
+    }
+</script>
+<style>
+    :root {
+      --ease-fluid: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #07080a;
+      color: #94a3b8;
+      overflow-x: hidden;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Ambient contour & technical grid background layer fixed across entire scroll */
+    #topoCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glass Panels */
+    .tactile-glass {
+      background: radial-gradient(130% 120% at 50% 0%, rgba(14, 18, 25, 0.7) 0%, rgba(8, 10, 14, 0.85) 100%);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 
+        0 1px 2px rgba(0, 0, 0, 0.6),
+        0 24px 48px -18px rgba(0, 0, 0, 0.85),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    /* Subtle interactive keyword illumination */
+    .bio-keyword {
+      border-bottom: 1px dotted rgba(52, 211, 153, 0.5);
+      color: #e2e8f0;
+      padding: 1px 4px;
+      border-radius: 2px;
+      transition: all 0.22s var(--ease-fluid);
+      cursor: default;
+      display: inline-block;
+      position: relative;
+    }
+
+    .bio-keyword:hover {
+      background-color: rgba(52, 211, 153, 0.12);
+      color: #34d399;
+      border-bottom-color: #34d399;
+      text-shadow: 0 0 14px rgba(52, 211, 153, 0.4);
+      transform: translateY(-1px);
+    }
+
+    /* Interest interactive tokens */
+    .interest-tag {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      transition: all 0.25s var(--ease-fluid);
+    }
+
+    .interest-tag:hover {
+      background: rgba(52, 211, 153, 0.06);
+      border-color: rgba(52, 211, 153, 0.35);
+      color: #f1f5f9;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.5);
+    }
+
+    .interest-tag:hover .tag-index {
+      color: #34d399;
+    }
+
+    /* Reveal animations */
+    .reveal-on-scroll {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.85s var(--ease-fluid), transform 0.85s var(--ease-fluid);
+      will-change: opacity, transform;
+    }
+
+    .reveal-on-scroll.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Subtle pulse dot */
+    @keyframes subtle-pulse {
+      0%, 100% { opacity: 0.95; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.82); }
+    }
+    .live-dot {
+      animation: subtle-pulse 3.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes scroll-bounce {
+      0%, 100% { transform: translateY(0); opacity: 0.6; }
+      50% { transform: translateY(6px); opacity: 1; }
+    }
+    .scroll-arrow-anim {
+      animation: scroll-bounce 2.2s infinite ease-in-out;
+    }
+
+    /* Section Stage Number Watermark */
+    .stage-number {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(3.5rem, 8vw, 7rem);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.06em;
+      color: rgba(255, 255, 255, 0.02);
+      user-select: none;
+      pointer-events: none;
+    }
+
+    a:focus-visible, button:focus-visible {
+      outline: 2px solid #34d399;
+      outline-offset: 2px;
+    }
+</style>
+</head>
+<body class="selection:bg-[#34d399] selection:text-black min-h-screen w-screen relative flex flex-col font-sans text-content-secondary antialiased">
+<!-- Topographic & Coordinate Grid Canvas (Fixed Background) -->
+<canvas aria-hidden="true" id="topoCanvas" width="1280" height="4455"></canvas>
+<!-- Fixed Header / Telemetry HUD Bar -->
+<header class="fixed top-0 inset-x-0 z-40 w-full flex items-center justify-between px-6 sm:px-12 py-4 border-b border-white/[0.07] bg-[#07080a]/80 backdrop-blur-md select-none transition-all duration-300" id="mainHeader">
+<div class="flex items-center gap-4 sm:gap-6"><a class="flex items-center gap-2 group cursor-pointer" href="#hero"><span class="w-1.5 h-1.5 rounded-full bg-accent-emerald live-dot"></span><span class="font-mono text-xs text-content-primary font-semibold tracking-tight group-hover:text-accent-emerald transition-colors">Sean Scott</span></a><span class="text-white/20 hidden sm:inline">—</span><span class="font-mono text-xs text-content-muted hidden sm:inline">Portfolio</span></div>
+<!-- Geographic and Spatial Coordinates HUD -->
+<div class="flex items-center gap-4 sm:gap-8 font-mono text-[11px] text-content-muted"><span class="font-mono text-xs text-content-muted">Maastricht, Netherlands</span></div>
+</header>
+<!-- Main Continuous Long Vertical Storyline -->
+<main class="relative z-10 w-full max-w-5xl mx-auto px-6 sm:px-12 pt-28 pb-36 flex flex-col">
+<!-- ==========================================
+       STAGE 1: HERO / MINIMALIST MASTHEAD
+       ========================================== -->
+<section class="min-h-[85vh] flex flex-col justify-between py-16 sm:py-24 border-b border-white/[0.06] relative" id="hero">
+<div class="stage-number absolute top-6 right-0">00</div>
+<div class="max-w-2xl pt-8 sm:pt-16 reveal-on-scroll revealed">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.02] mb-6">
+<span class="w-1.5 h-1.5 rounded-full bg-accent-emerald live-dot"></span>
+<span class="font-mono text-[11px] text-content-secondary lowercase tracking-tight">maastricht · netherlands</span>
+</div>
+<h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-mono font-bold tracking-tight text-content-primary lowercase select-none leading-none mb-6">
+        sean.scott
+      </h1>
+<p class="text-sm sm:text-base md:text-lg font-mono text-content-tertiary tracking-tight leading-relaxed max-w-xl">
+        student · maastricht university · hci + distributed systems · sec / pentesting
+      </p>
+<div class="mt-8 flex flex-wrap items-center gap-3 text-xs font-mono text-content-muted">
+<span class="px-2.5 py-1 rounded border border-white/[0.06] bg-black/40">academic research</span>
+<span class="px-2.5 py-1 rounded border border-white/[0.06] bg-black/40">personal tools</span>
+<span class="px-2.5 py-1 rounded border border-white/[0.06] bg-black/40">defensive systems</span>
+</div>
+</div>
+<!-- Telemetry & Subtle Scroll Prompt -->
+<div class="pt-16 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6 reveal-on-scroll revealed"><div class="flex flex-col gap-1.5 font-mono text-xs text-content-muted"><span class="text-content-secondary flex items-center gap-2">Academic research · Human-computer interaction &amp; distributed systems</span></div><a class="group flex items-center gap-2 font-mono text-xs text-content-muted hover:text-content-primary transition-colors cursor-pointer select-none" href="#narrative"><span class="text-xs text-content-muted group-hover:text-accent-emerald transition-colors">Scroll to explore</span><span class="w-6 h-6 rounded-full border border-white/[0.1] group-hover:border-accent-emerald/50 flex items-center justify-center scroll-arrow-anim text-[10px]">↓</span></a></div>
+</section>
+<!-- ==========================================
+       STAGE 2: NARRATIVE & ETHOS (Generously Spaced)
+       ========================================== -->
+<section class="py-28 sm:py-40 flex flex-col gap-32 sm:gap-44 border-b border-white/[0.06] relative" id="narrative">
+<div class="stage-number absolute top-12 right-0">01</div>
+<div class="flex items-center gap-3 font-mono text-xs uppercase tracking-widest text-accent-emerald/80 reveal-on-scroll revealed"><span class="text-accent-emerald font-semibold">01</span><span class="text-white/20">—</span><span class="font-mono text-xs uppercase tracking-widest text-content-secondary">About &amp; Research Foundations</span></div>
+<!-- Paragraph 1: Identity & Academic Focus -->
+<div class="reveal-on-scroll max-w-3xl revealed">
+<div class="flex items-center gap-2 font-mono text-xs text-content-muted mb-4 uppercase tracking-wider">
+<span class="text-accent-emerald">01.1</span>
+<span class="">Identity &amp; Focus</span>
+</div>
+<p class="font-sans text-xl sm:text-2xl md:text-3xl leading-[1.7] sm:leading-[1.7] text-content-secondary font-light">
+        I am <span class="text-content-primary font-medium">Sean Scott Sannino</span> — a student at Maastricht University focusing on 
+        <span class="bio-keyword">human-computer interaction</span>, 
+        <span class="bio-keyword">distributed systems</span>, and 
+        <span class="bio-keyword">ambient interfaces</span>.
+      </p>
+</div>
+<!-- Paragraph 2: Philosophy & Quiet Tools -->
+<div class="reveal-on-scroll max-w-3xl ml-auto revealed">
+<div class="flex items-center gap-2 font-mono text-xs text-content-muted mb-4 uppercase tracking-wider justify-end sm:justify-start">
+<span class="text-accent-emerald">01.2</span>
+<span class="">Philosophy of Form &amp; Space</span>
+</div>
+<p class="font-sans text-xl sm:text-2xl md:text-3xl leading-[1.7] sm:leading-[1.7] text-content-secondary font-light">
+        I am drawn to how software feels in the hand: building personal computing tools that remain 
+        <span class="bio-keyword">quiet, direct, and unpretentious</span>. I explore how digital interfaces can weave naturally into physical architectures and everyday spatial environments without demanding constant cognitive surrender.
+      </p>
+</div>
+<!-- Paragraph 3: Systems Architecture & Security Depth -->
+<div class="reveal-on-scroll max-w-3xl revealed">
+<div class="flex items-center gap-2 font-mono text-xs text-content-muted mb-4 uppercase tracking-wider">
+<span class="text-accent-emerald">01.3</span>
+<span class="">Systems &amp; Security Depth</span>
+</div>
+<p class="font-sans text-xl sm:text-2xl md:text-3xl leading-[1.7] sm:leading-[1.7] text-content-secondary font-light">
+        Currently deepening my understanding of lower-level systems architecture, 
+        <span class="bio-keyword">local-first protocols</span>, and 
+        <span class="bio-keyword">computer security</span> (penetration testing fundamentals and defensive engineering).
+      </p>
+</div>
+</section>
+<!-- ==========================================
+       STAGE 3: FOCUS & SYSTEMS TRACK (Spaced Out Modules)
+       ========================================== -->
+<section class="py-28 sm:py-40 border-b border-white/[0.06] relative" id="systems">
+<div class="stage-number absolute top-12 right-0">02</div>
+<div class="flex items-center justify-between mb-16 pb-4 border-b border-white/[0.06] reveal-on-scroll revealed"><div class="flex items-center gap-3 font-mono text-xs"><span class="text-accent-emerald font-semibold">02</span><span class="text-white/20">—</span><span class="font-mono text-xs uppercase tracking-widest text-content-secondary">Areas of Focus</span></div><span class="font-mono text-xs text-content-muted">Selected topics</span></div>
+<!-- Vertical spaced sequence of 6 distinct system modules -->
+<div class="flex flex-col gap-6 sm:gap-8">
+<!-- 01 HCI -->
+<div class="reveal-on-scroll tactile-glass rounded-xl p-6 sm:p-8 border border-white/[0.08] hover:border-accent-emerald/30 transition-all duration-300 group revealed">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<span class="font-mono text-xs text-accent-emerald font-semibold">01 //</span>
+<h3 class="text-lg sm:text-xl font-mono text-content-primary group-hover:text-accent-emerald transition-colors lowercase">human-computer interaction</h3>
+</div>
+<div class="flex items-center gap-3 font-mono text-xs text-content-muted">
+<span class="w-1.5 h-1.5 rounded-full bg-accent-emerald/70"></span>
+<span class="">input modalities &amp; ergonomic tooling</span>
+</div>
+</div>
+</div>
+<!-- 02 Distributed Systems -->
+<div class="reveal-on-scroll tactile-glass rounded-xl p-6 sm:p-8 border border-white/[0.08] hover:border-accent-emerald/30 transition-all duration-300 group revealed">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<span class="font-mono text-xs text-accent-emerald font-semibold">02 //</span>
+<h3 class="text-lg sm:text-xl font-mono text-content-primary group-hover:text-accent-emerald transition-colors lowercase">distributed systems</h3>
+</div>
+<div class="flex items-center gap-3 font-mono text-xs text-content-muted">
+<span class="w-1.5 h-1.5 rounded-full bg-accent-emerald/70"></span>
+<span class="">consensus, replication &amp; state</span>
+</div>
+</div>
+</div>
+<!-- 03 Ambient Interfaces -->
+<div class="reveal-on-scroll tactile-glass rounded-xl p-6 sm:p-8 border border-white/[0.08] hover:border-accent-emerald/30 transition-all duration-300 group revealed">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<span class="font-mono text-xs text-accent-emerald font-semibold">03 //</span>
+<h3 class="text-lg sm:text-xl font-mono text-content-primary group-hover:text-accent-emerald transition-colors lowercase">ambient interfaces</h3>
+</div>
+<div class="flex items-center gap-3 font-mono text-xs text-content-muted">
+<span class="w-1.5 h-1.5 rounded-full bg-accent-emerald/70"></span>
+<span class="">peripheral computing &amp; spatial cues</span>
+</div>
+</div>
+</div>
+<!-- 04 Tactile Software -->
+<div class="reveal-on-scroll tactile-glass rounded-xl p-6 sm:p-8 border border-white/[0.08] hover:border-accent-emerald/30 transition-all duration-300 group revealed">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<span class="font-mono text-xs text-accent-emerald font-semibold">04 //</span>
+<h3 class="text-lg sm:text-xl font-mono text-content-primary group-hover:text-accent-emerald transition-colors lowercase">tactile software</h3>
+</div>
+<div class="flex items-center gap-3 font-mono text-xs text-content-muted">
+<span class="w-1.5 h-1.5 rounded-full bg-accent-emerald/70"></span>
+<span class="">direct manipulation &amp; responsiveness</span>
+</div>
+</div>
+</div>
+<!-- 05 Cybersecurity (Learning) -->
+<div class="reveal-on-scroll tactile-glass rounded-xl p-6 sm:p-8 border border-white/[0.08] hover:border-accent-emerald/30 transition-all duration-300 group revealed">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<span class="font-mono text-xs text-accent-emerald font-semibold">05 //</span>
+<h3 class="text-lg sm:text-xl font-mono text-content-primary group-hover:text-accent-emerald transition-colors lowercase">cybersecurity (learning)</h3>
+</div>
+<div class="flex items-center gap-3 font-mono text-xs text-content-muted">
+<span class="w-1.5 h-1.5 rounded-full bg-accent-emerald/70"></span>
+<span class="">defensive engineering &amp; protocols</span>
+</div>
+</div>
+</div>
+<!-- 06 Pentesting -->
+<div class="reveal-on-scroll tactile-glass rounded-xl p-6 sm:p-8 border border-white/[0.08] hover:border-accent-emerald/30 transition-all duration-300 group revealed">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<span class="font-mono text-xs text-accent-emerald font-semibold">06 //</span>
+<h3 class="text-lg sm:text-xl font-mono text-content-primary group-hover:text-accent-emerald transition-colors lowercase">pentesting</h3>
+</div>
+<div class="flex items-center gap-3 font-mono text-xs text-content-muted">
+<span class="w-1.5 h-1.5 rounded-full bg-accent-emerald/70"></span>
+<span class="">vulnerability assessment &amp; audit</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ==========================================
+       STAGE 4: COLOPHON & TRANSMISSION CHANNELS
+       ========================================== -->
+<section class="py-28 sm:py-40 relative" id="channels">
+<div class="stage-number absolute top-12 right-0">03</div>
+<div class="flex items-center gap-3 font-mono text-xs uppercase tracking-widest text-accent-emerald/80 mb-12 reveal-on-scroll revealed"><span class="text-accent-emerald font-semibold">03</span><span class="text-white/20">—</span><span class="font-mono text-xs uppercase tracking-widest text-content-secondary">Contact &amp; Inquiries</span></div>
+<div class="tactile-glass rounded-2xl p-8 sm:p-12 border border-white/[0.08] reveal-on-scroll revealed">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+<!-- Direct communication info -->
+<div class="space-y-4 max-w-md"><h2 class="text-2xl sm:text-3xl font-mono font-bold text-content-primary">Get in touch</h2><p class="font-sans text-sm sm:text-base text-content-secondary leading-relaxed">Direct channel open for academic inquiries, professional collaboration, or research discussions.</p><div class="pt-2 flex items-center gap-2 font-mono text-xs text-content-muted"><span class="w-1.5 h-1.5 rounded-full bg-accent-emerald live-dot"></span><span class="">Open to correspondence</span></div></div>
+<!-- Transmission Buttons Dock -->
+<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 font-mono text-sm">
+<!-- 1-Click Copy Email -->
+<button class="interest-tag px-5 py-3 rounded-lg flex items-center justify-between sm:justify-center gap-3 text-content-primary hover:text-white cursor-pointer transition-all" id="copyEmailBtn" title="Click to copy email address" type="button">
+<span class="text-accent-emerald text-xs font-semibold">@</span>
+<span id="emailLabel" class="">sanninosean@duck.com</span>
+<span class="text-[10px] text-content-muted ml-1" id="copyIndicator">copy</span>
+</button>
+<!-- GitHub Link -->
+<a class="interest-tag px-5 py-3 rounded-lg flex items-center justify-between sm:justify-center gap-2 text-content-secondary hover:text-white transition-all" href="https://github.com/iseanam" rel="noopener noreferrer" target="_blank">
+<span class="">github</span>
+<span class="text-xs text-content-muted">↗</span>
+</a>
+<!-- LinkedIn Link -->
+<a class="interest-tag px-5 py-3 rounded-lg flex items-center justify-between sm:justify-center gap-2 text-content-secondary hover:text-white transition-all" href="https://linkedin.com" rel="noopener noreferrer" target="_blank">
+<span class="">linkedin</span>
+<span class="text-xs text-content-muted">↗</span>
+</a>
+</div>
+</div>
+<!-- Telemetry Sub-dock -->
+<div class="mt-12 pt-8 border-t border-white/[0.06] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 font-mono text-xs text-content-muted"><div class="flex items-center gap-3"><span class="text-content-secondary">Maastricht, Netherlands</span><span class="text-white/20">·</span><span class="">Maastricht University</span></div><div class="flex items-center gap-3"><span class="">© 2026 Sean Scott</span><span class="text-white/20">·</span><span class="">All rights reserved</span></div></div>
+</div>
+</section>
+</main>
+<!-- Bottom Anchored Minimal Floating Telemetry Dock -->
+<aside class="fixed bottom-4 inset-x-0 z-40 pointer-events-none px-6 sm:px-12 flex items-center justify-between"><div class="pointer-events-auto interest-tag px-3 py-1.5 rounded-full backdrop-blur-md bg-black/70 border border-white/[0.08] flex items-center gap-2 text-[11px] font-mono text-content-muted select-none"><span class="w-1.5 h-1.5 rounded-full bg-accent-emerald live-dot"></span><span class="text-content-secondary">Academic Portfolio</span></div><div class="pointer-events-auto interest-tag px-3 py-1.5 rounded-full backdrop-blur-md bg-black/70 border border-white/[0.08] flex items-center gap-2 text-[11px] font-mono text-content-muted select-none"><span class="text-content-secondary">Maastricht, NL</span><span class="text-white/20">·</span><span class="">2026</span></div></aside>
+<!-- Interactive Scripts & Rich Continuous Topography Background Canvas -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Interactive Atmospheric Topography & Coordinate Grid Canvas with Parallax Scroll
+      const canvas = document.getElementById('topoCanvas');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let mouseX = 0, mouseY = 0;
+        let targetMouseX = 0, targetMouseY = 0;
+        let scrollY = window.scrollY;
+
+        function resize() {
+          width = canvas.width = window.innerWidth;
+          height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        window.addEventListener('scroll', () => {
+          scrollY = window.scrollY;
+        }, { passive: true });
+        resize();
+
+        window.addEventListener('mousemove', (e) => {
+          targetMouseX = (e.clientX - width / 2);
+          targetMouseY = (e.clientY - height / 2);
+        });
+
+        let t = 0;
+        function render() {
+          t += 0.0025;
+          mouseX += (targetMouseX - mouseX) * 0.035;
+          mouseY += (targetMouseY - mouseY) * 0.035;
+
+          ctx.clearRect(0, 0, width, height);
+
+          // Technical Dot-Matrix / Crosshairs Grid with scroll parallax
+          const gridSize = 72;
+          ctx.lineWidth = 0.5;
+          const yOffset = (scrollY * 0.15) % gridSize;
+          
+          for (let x = gridSize; x < width; x += gridSize) {
+            for (let y = gridSize - yOffset; y < height; y += gridSize) {
+              if (y < 0) continue;
+              // Subtle crosshairs at periodic intersections
+              if ((x / gridSize) % 3 === 0 && (Math.round(y / gridSize)) % 3 === 0) {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+                const crossLen = 3;
+                ctx.beginPath();
+                ctx.moveTo(x - crossLen, y); ctx.lineTo(x + crossLen, y);
+                ctx.moveTo(x, y - crossLen); ctx.lineTo(x, y + crossLen);
+                ctx.stroke();
+              } else {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+                ctx.fillRect(x - 0.5, y - 0.5, 1, 1);
+              }
+            }
+          }
+
+          // Elevation Organic Topographic Contours responsive to continuous vertical scroll
+          const rings = 20;
+          const scrollParallaxY = (scrollY * 0.08) % height;
+          const cx = width * 0.5 + mouseX * 0.05;
+          const cy = height * 0.5 + mouseY * 0.05 - (scrollParallaxY * 0.3);
+          const maxRadius = Math.max(width, height) * 0.85;
+
+          for (let i = 1; i <= rings; i++) {
+            const baseR = (i / rings) * maxRadius;
+            ctx.beginPath();
+
+            const isKeyElevation = i % 4 === 0;
+            if (isKeyElevation) {
+              ctx.lineWidth = 0.85;
+              ctx.strokeStyle = 'rgba(52, 211, 153, 0.12)'; // Phosphor emerald accent stroke
+            } else {
+              ctx.lineWidth = 0.45;
+              ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)'; // Faint slate stroke
+            }
+
+            const steps = 96;
+            const scrollShift = scrollY * 0.0012;
+            for (let s = 0; s <= steps; s++) {
+              const theta = (s / steps) * Math.PI * 2;
+              // Fluid topographical perturbation formula influenced by time & scroll position
+              const wave = 
+                Math.sin(theta * 3 + t * 1.1 + i * 0.35 + scrollShift) * (20 + i * 1.6) +
+                Math.cos(theta * 5 - t * 0.7 - scrollShift * 0.5) * 14 +
+                Math.sin(theta * 2 + t * 0.4) * 9;
+
+              const r = Math.max(0, baseR + wave);
+              const x = cx + Math.cos(theta) * r;
+              const y = cy + Math.sin(theta) * (r * 0.68); // gentle perspective flattening
+
+              if (s === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+
+            // Minimal Elevation Marker Tags on Key Contours
+            if (isKeyElevation && i <= 16) {
+              const markerAngle = 0.55 + (i * 0.18);
+              const mx = cx + Math.cos(markerAngle) * (baseR + 4);
+              const my = cy + Math.sin(markerAngle) * (baseR * 0.68 + 4);
+              ctx.font = '8px "Space Mono", monospace';
+              ctx.fillStyle = 'rgba(52, 211, 153, 0.28)';
+              ctx.fillText(`+${i * 25}M`, mx, my);
+            }
+          }
+
+          requestAnimationFrame(render);
+        }
+        render();
+      }
+
+      // 2. IntersectionObserver for Smooth Reveal Animations on Scroll
+      const revealElements = document.querySelectorAll('.reveal-on-scroll');
+      if ('IntersectionObserver' in window) {
+        const revealObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('revealed');
+            }
+          });
+        }, {
+          threshold: 0.12,
+          rootMargin: '0px 0px -50px 0px'
+        });
+
+        revealElements.forEach(el => revealObserver.observe(el));
+      } else {
+        revealElements.forEach(el => el.classList.add('revealed'));
+      }
+
+      // 3. 1-Click Clipboard Copy with Feedback
+      const copyBtn = document.getElementById('copyEmailBtn');
+      const emailLabel = document.getElementById('emailLabel');
+      const copyIndicator = document.getElementById('copyIndicator');
+      const emailAddress = 'sanninosean@duck.com';
+      let copyTimeout = null;
+
+      if (copyBtn && emailLabel) {
+        copyBtn.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(emailAddress);
+          } catch {
+            const temp = document.createElement('textarea');
+            temp.value = emailAddress;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+          }
+
+          clearTimeout(copyTimeout);
+          emailLabel.innerHTML = '<span class="text-accent-emerald font-semibold">copied to clipboard</span>';
+          if (copyIndicator) copyIndicator.textContent = '✓';
+          copyBtn.classList.add('border-accent-emerald/50');
+
+          copyTimeout = setTimeout(() => {
+            emailLabel.textContent = emailAddress;
+            if (copyIndicator) copyIndicator.textContent = 'copy';
+            copyBtn.classList.remove('border-accent-emerald/50');
+          }, 2200);
+        });
+      }
+
+      // 4. Live UTC Time Display
+      const utcClock = document.getElementById('utcClock');
+      function updateClock() {
+        const d = new Date();
+        const hh = String(d.getUTCHours()).padStart(2, '0');
+        const mm = String(d.getUTCMinutes()).padStart(2, '0');
+        const ss = String(d.getUTCSeconds()).padStart(2, '0');
+        if (utcClock) {
+          utcClock.textContent = `UTC ${hh}:${mm}:${ss}`;
+        }
+      }
+      updateClock();
+      setInterval(updateClock, 1000);
+    });
+</script>
+
+
+</body></html>
