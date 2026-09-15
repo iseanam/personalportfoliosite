@@ -1,1 +1,1 @@
-
+- portfolio site for personal projects, curriculum v and biographical info. - 
